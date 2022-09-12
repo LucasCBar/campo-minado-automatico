@@ -15,6 +15,88 @@
             document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
             
             // Realize sua codificação a partir deste ponto, boa sorte!
+            
+        // Variaveis utilizadas
+        var bombas_econtradas = [];
+        var tabuleiro;
+
+        function atualiza_tabuleiro() {
+            tabuleiro = campoMinado.Tabuleiro();
+            for (let bomba = 0; bomba < bombas_econtradas.length; bomba++) {
+                localiza_bomba(11 * bombas_econtradas[bomba][0] + bombas_econtradas[bomba][1]);
+            }
+        }
+
+        function mostra_status() {
+            if (campoMinado.JogoStatus() == 0)
+                document.getElementById('exibir-execucao').innerHTML += '----------- Jogo em aberto -----------';
+            else if (campoMinado.JogoStatus() == 1)
+                document.getElementById('exibir-execucao').innerHTML += '----------- Vitoria -----------';
+            else if (campoMinado.JogoStatus() == 2)
+                document.getElementById('exibir-execucao').innerHTML += '----------- Derrota -----------';
+            document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>'
+        }
+
+        function localiza_bomba(posicao) {
+            tabuleiro = tabuleiro.substring(0, posicao) + '*' + tabuleiro.substring(posicao + 1, tabuleiro.length);
+        }
+
+        // Encontra as casas sem bombas, assim resolvendo o campo minado.
+
+        function logica_cm() {
+            //Matriz que percorre o tabuleiro
+            for (let x = 0; x < 9; x++) {
+                for (let y = 0; y < 9; y++) {
+                    if (tabuleiro[11 * x + y] >= 1 && tabuleiro[11 * x + y] <= 8) {
+                        let casa_desconhecidas = [];
+                        let casa_bomba = [];
+                        let total_casa_desconhecidas = 0;
+                        let total_bombas = 0;
+                        for (let i = x - 1; i < x + 2; i++) {
+                            for (let j = y - 1; j < y + 2; j++) {
+                                if (i >= 0 && j >= 0 && i < 9 && j < 9) {
+                                    if (tabuleiro[11 * i + j] == '-') {
+                                        total_casa_desconhecidas++;
+                                        casa_desconhecidas.push([i, j]);
+                                    } else if (tabuleiro[11 * i + j] == '*') {
+                                        total_bombas++;
+                                        casa_bomba.push([i, j]);
+                                    }
+                                }
+                            }
+                        }
+                        if (total_casa_desconhecidas + total_bombas == tabuleiro[11 * x + y]) {
+                            for (let pos = casa_desconhecidas.shift(); total_casa_desconhecidas > 0; pos = casa_desconhecidas.shift(), total_casa_desconhecidas--) {
+                                i = pos[0];
+                                j = pos[1];
+                                if (tabuleiro[11 * i + j] == '-') {
+                                    document.getElementById('exibir-execucao').innerHTML += `<p>Bomba encontrada: linha(${i + 1}) / coluna(${j + 1})</p>`
+                                    localiza_bomba(11 * i + j);
+                                    bombas_econtradas.push([i, j]);
+                                }
+                            }
+                        }
+                        if (total_bombas == tabuleiro[11 * x + y]) {
+                            for (let ps = casa_desconhecidas.shift(); total_casa_desconhecidas > 0; ps = casa_desconhecidas.shift(), total_casa_desconhecidas--) {
+                                i = ps[0];
+                                j = ps[1];
+                                document.getElementById('exibir-execucao').innerHTML += `<p>Abrindo casa: linha(${i + 1}) / coluna(${j + 1})</p>`
+                                campoMinado.Abrir(i + 1, j + 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Printa os passos para resolver o jogo e o resultado final.
+        while (campoMinado.JogoStatus() == 0) {
+            atualiza_tabuleiro();
+            mostra_status();
+            logica_cm();
+        }
+
+        mostra_status();
         </script>
     </body>
 </html>
